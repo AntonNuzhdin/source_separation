@@ -1,9 +1,5 @@
-from src.model.all_metrics import SISNRi, SISDR, PESQ, SDRi, STOI
+from src.model.baseline_model import BaselineModel
 
 __all__ = [
-    "SISNRi",
-    "SISDR",
-    "PESQ",
-    "SDRi",
-    "STOI",
+    "BaselineModel",
 ]
