@@ -1,6 +1,16 @@
 train: [] # metrics that are calculated during training
 inference: # metrics that are calculated during inference (eval)
-  - _target_: src.metrics.ArgmaxCERMetric
-    name: "CER_(Argmax)" # it is better to avoid spaces in names
-  - _target_: src.metrics.ArgmaxWERMetric
-    name: "WER_(Argmax)"
+  - _target_: src.metric.metrics.SISDR
+    name: "SISDR"
+  - _target_: src.metric.metrics.PESQ
+    name: "PESQ"
+    fs: 16000
+    mode: "wb"
+  - _target_: src.metric.metrics.STOI
+    name: "STOI"
+    fs: 16000
+    extended: False
+  - _target_: src.metric.metrics.SDRi
+    name: "SDRi"
+  - _target_: src.metric.metrics.SISNRi
+    name: "SISNRi"
