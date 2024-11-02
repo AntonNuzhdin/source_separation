@@ -2,6 +2,7 @@ import logging
 import random
 
 import numpy as np
+
 import torch
 import torchaudio
 from torch.utils.data import Dataset
@@ -79,25 +80,41 @@ class BaseDataset(Dataset):
                 (a single dataset element).
         """
         data_dict = self._index[ind]
-        audio_path = data_dict["path"]
-        audio = self.load_audio(audio_path)
-        text = data_dict["text"]
-        text_encoded = self.text_encoder.encode(text)
 
-        spectrogram = self.get_spectrogram(audio)
+        mix_path = data_dict['mix_path']
+        s1_path = data_dict['s1_path']
+        s2_path = data_dict['s2_path']
+        s1_mouth_path = data_dict['s1_mouth_path']
+        s2_mouth_path = data_dict['s2_mouth_path']
+        mix_audio_length = data_dict['mix_audio_length']
+        s1_audio_length = data_dict['s1_audio_length']
+        s2_audio_length = data_dict['s2_audio_length']
+
+        mix_audio = self.load_audio(mix_path)
+        s1_audio = self.load_audio(s1_path)
+        s2_audio = self.load_audio(s2_path)
+
+        s1_mouth = np.load(s1_mouth_path)
+        s2_mouth = np.load(s2_mouth_path)
 
         instance_data = {
-            "audio": audio,
-            "spectrogram": spectrogram,
-            "text": text,
-            "text_encoded": text_encoded,
-            "audio_path": audio_path,
+            'mix_path': mix_path,
+            's1_path': s1_path,
+            's2_path': s2_path,
+            's1_mouth_path': s1_mouth_path,
+            's2_mouth_path': s2_mouth_path,
+            'mix_audio_length': mix_audio_length,
+            's1_audio_length': s1_audio_length,
+            's2_audio_length': s2_audio_length,
+            'mix_audio': mix_audio,
+            's1_audio': s1_audio,
+            's2_audio': s2_audio,
+            's1_mouth': s1_mouth,
+            's2_mouth': s2_mouth
         }
 
-        # TODO think of how to apply wave augs before calculating spectrogram
-        # Note: you may want to preserve both audio in time domain and
-        # in time-frequency domain for logging
-        instance_data = self.preprocess_data(instance_data)
+        # TODO: подумать нужно ли как-то предобрабатывать это все
+        # instance_data = self.preprocess_data(instance_data)
 
         return instance_data
 
