@@ -1,16 +1,16 @@
 train: [] # metrics that are calculated during training
 inference: # metrics that are calculated during inference (eval)
-  - _target_: src.metric.metrics.SISDR
+  - _target_: src.metrics.all_metrics.SISDR
     name: "SISDR"
-  - _target_: src.metric.metrics.PESQ
+  - _target_: src.metrics.all_metrics.PESQ
     name: "PESQ"
     fs: 16000
     mode: "wb"
-  - _target_: src.metric.metrics.STOI
+  - _target_: src.metrics.all_metrics.STOI
     name: "STOI"
     fs: 16000
     extended: False
-  - _target_: src.metric.metrics.SDRi
+  - _target_: src.metrics.all_metrics.SDRi
     name: "SDRi"
-  - _target_: src.metric.metrics.SISNRi
+  - _target_: src.metrics.all_metrics.SISNRi
     name: "SISNRi"

@@ -4,7 +4,7 @@ defaults:
   - metrics: example
   - datasets: example
   - dataloader: example
-  - transforms: example_only_instance
+  # - transforms: example
   - _self_
 optimizer:
   _target_: torch.optim.AdamW
@@ -17,14 +17,14 @@ lr_scheduler:
   epochs: ${trainer.n_epochs}
   anneal_strategy: cos
 loss_function:
-  _target_: src.loss.CTCLossWrapper
-text_encoder:
-  _target_: src.text_encoder.CTCTextEncoder
+  _target_: src.loss.SI_SDR_LOSS
+# text_encoder:
+#   _target_: src.text_encoder.CTCTextEncoder
 trainer:
   log_step: 50
   n_epochs: 50
   epoch_len: 200
-  device_tensors: ["spectrogram", "text_encoded"] # which tensors should be on device (ex. GPU)
+  device_tensors: ["mix_audio", "s1_audio", "s2_audio"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
   override: False # if True, will override the previous run with the same name

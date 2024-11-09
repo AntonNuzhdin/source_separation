@@ -22,7 +22,6 @@ class BaseTrainer:
         metrics,
         optimizer,
         lr_scheduler,
-        text_encoder,
         config,
         device,
         dataloaders,
@@ -72,7 +71,7 @@ class BaseTrainer:
         self.criterion = criterion
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
-        self.text_encoder = text_encoder
+
         self.batch_transforms = batch_transforms
 
         # define dataloaders
@@ -367,13 +366,13 @@ class BaseTrainer:
                 the dataloader (possibly transformed via batch transform).
         """
         # do batch transforms on device
-        transform_type = "train" if self.is_train else "inference"
-        transforms = self.batch_transforms.get(transform_type)
-        if transforms is not None:
-            for transform_name in transforms.keys():
-                batch[transform_name] = transforms[transform_name](
-                    batch[transform_name]
-                )
+        # transform_type = "train" if self.is_train else "inference"
+        # transforms = self.batch_transforms.get(transform_type)
+        # if transforms is not None:
+        #     for transform_name in transforms.keys():
+        #         batch[transform_name] = transforms[transform_name](
+        #             batch[transform_name]
+        #         )
         return batch
 
     def _clip_grad_norm(self):

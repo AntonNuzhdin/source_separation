@@ -6,6 +6,32 @@ import torch.nn.functional as F
 from torch import Tensor
 
 
+def calc_si_sdr(target, est) -> float:
+    alpha = (est * target).sum(dim=1, keepdim=True) / torch.square(target).sum(dim=1, keepdim=True)
+    return 10 * torch.log10(torch.square(alpha * target).sum(dim=1) / torch.square(alpha * target - est).sum(dim=1) + 1e-4)
+
+
+def calc_si_sdri(target, est, source) -> float:
+    return calc_si_sdr(target, est) - calc_si_sdr(target, source)
+
+
+class SI_SDR_LOSS(nn.MSELoss):
+    def __init__(self):
+        super().__init__()
+        self.loss = nn.MSELoss(reduction='none')
+
+    def forward(self, s1_audio, s2_audio, output_spk1, output_spk2, **batch):
+        s1_s1 = calc_si_sdr(s1_audio, output_spk1)
+        s1_s2 = calc_si_sdr(s1_audio, output_spk2)
+        s2_s1 = calc_si_sdr(s2_audio, output_spk1)
+        s2_s2 = calc_si_sdr(s2_audio, output_spk2)
+
+        # permute_1 = torch.sum((s1_s1 + s2_s2) / 2, axis=-1)
+        # permute_2 = torch.sum((s1_s2 + s2_s1) / 2, axis=-1)
+        loss = torch.maximum((s1_s1 + s2_s2) / 2, (s1_s2 + s2_s1) / 2)
+        return {"loss": -torch.mean(loss)}
+
+
 class SISDRLoss(nn.Module):
     def __init__(self):
         super(SISDRLoss, self).__init__()
@@ -32,6 +58,15 @@ class CrossEntropyLossWrapper(nn.CrossEntropyLoss):
         loss = super().forward(inputs, targets)
         return {"loss_ce": loss}
 
+
+# 'mix_audio': [],
+# 's1_audio': [],
+# 's2_audio': [],
+# 's1_mouth': [],
+# 's2_mouth': [],
+# 'mix_audio_length': [],
+# 's1_audio_length': [],
+# 's2_audio_length': []
 
 class CombinedLoss(nn.Module):
     def __init__(self, gamma: float = 1.0):

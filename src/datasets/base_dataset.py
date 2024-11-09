@@ -49,14 +49,15 @@ class BaseDataset(Dataset):
                 should be applied on the instance. Depend on the
                 tensor name.
         """
-        self._assert_index_is_valid(index)
+        # self._assert_index_is_valid(index)
 
         index = self._filter_records_from_dataset(
             index, max_audio_length, max_text_length
         )
         index = self._shuffle_and_limit_index(index, limit, shuffle_index)
-        if not shuffle_index:
-            index = self._sort_index(index)
+
+        # if not shuffle_index:
+        #     index = self._sort_index(index)
 
         self._index: list[dict] = index
 
@@ -94,8 +95,8 @@ class BaseDataset(Dataset):
         s1_audio = self.load_audio(s1_path)
         s2_audio = self.load_audio(s2_path)
 
-        s1_mouth = np.load(s1_mouth_path)
-        s2_mouth = np.load(s2_mouth_path)
+        # s1_mouth = np.load(s1_mouth_path)
+        # s2_mouth = np.load(s2_mouth_path)
 
         instance_data = {
             'mix_path': mix_path,
@@ -109,8 +110,8 @@ class BaseDataset(Dataset):
             'mix_audio': mix_audio,
             's1_audio': s1_audio,
             's2_audio': s2_audio,
-            's1_mouth': s1_mouth,
-            's2_mouth': s2_mouth
+            # 's1_mouth': s1_mouth,
+            # 's2_mouth': s2_mouth
         }
 
         # TODO: подумать нужно ли как-то предобрабатывать это все
