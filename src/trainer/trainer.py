@@ -53,6 +53,7 @@ class Trainer(BaseTrainer):
         batch.update(outputs)
 
         all_losses = self.criterion(**batch)
+
         batch.update(all_losses)
 
         if self.is_train:
@@ -70,8 +71,7 @@ class Trainer(BaseTrainer):
             metrics.update(met.name, met(**batch))
         return batch
 
-    def _log_batch(self, s1_audio: Tensor, s2_audio: Tensor, output_spk1: Tensor,
-                   output_spk2: Tensor, mix_audio: Tensor, mode="train", **batch):
+    def _log_batch(self, batch_idx, batch, mode='train'):
         """
         Log data from batch. Calls self.writer.add_* to log data
         to the experiment tracker.
@@ -89,37 +89,37 @@ class Trainer(BaseTrainer):
         else:
             self._log_input_audio(**batch)
 
-    def _log_input_audio(self, s1_audio: Tensor, s2_audio: Tensor, mix_audio: Tensor):
+    def _log_input_audio(self, s1_audio: Tensor, s2_audio: Tensor, mix_audio: Tensor, **batch):
         cnt = min(len(s1_audio), len(s2_audio), len(mix_audio))
         i = random.randint(0, cnt - 1)
         self.writer.add_audio("Audio1", s1_audio[i], 16000)
         self.writer.add_audio("Audio2", s2_audio[i], 16000)
         self.writer.add_audio("Mix_audio", mix_audio[i], 16000)
 
-    def _log_predictions(self, s1_audio: Tensor, s2_audio: Tensor, output_spk1: Tensor,
-                         output_spk2: Tensor, mix_audio: Tensor):
-        cnt = min(len(s1_audio), len(s2_audio), len(output_spk1), len(output_spk2), len(mix_audio))
+    def _log_predictions(self, s1_audio: Tensor, s2_audio: Tensor, speaker_1: Tensor,
+                         speaker_2: Tensor, mix_audio: Tensor, **batch):
+        cnt = min(len(s1_audio), len(s2_audio), len(speaker_1), len(speaker_2), len(mix_audio))
         i = random.randint(0, cnt - 1)
         self.writer.add_audio("Audio1", s1_audio[i], 16000)
-        self.writer.add_audio("Predicted1", output_spk1[i], 16000)
+        self.writer.add_audio("Predicted1", speaker_1[i], 16000)
 
         self.writer.add_audio("Audio2", s2_audio[i], 16000)
-        self.writer.add_audio("Predicted2", output_spk2[i], 16000)
+        self.writer.add_audio("Predicted2", speaker_2[i], 16000)
 
         self.writer.add_audio("Mix_audio", mix_audio[i], 16000)
 
         self.writer.add_scalar("SISNRi", SISNRi(
-            s1_audio[i], s2_audio[i], mix_audio[i], output_spk1[i], output_spk2[i]
+            s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
         ))
         self.writer.add_scalar("SISDRi", SISDRi(
-            s1_audio[i], s2_audio[i], mix_audio[i], output_spk1[i], output_spk2[i]
+            s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
         ))
         self.writer.add_scalar("PESQ", PESQ(
-            s1_audio[i], s2_audio[i], mix_audio[i], output_spk1[i], output_spk2[i]
+            s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
         ))
         self.writer.add_scalar("SDRi", SDRi(
-            s1_audio[i], s2_audio[i], mix_audio[i], output_spk1[i], output_spk2[i]
+            s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
         ))
         self.writer.add_scalar("STOI", STOI(
-            s1_audio[i], s2_audio[i], mix_audio[i], output_spk1[i], output_spk2[i]
+            s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
         ))
