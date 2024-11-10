@@ -33,7 +33,7 @@ class SISNRi(BaseMetric):
         return loss.mean()
 
 
-class SISDR(BaseMetric):
+class SISDRi(BaseMetric):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.sisdr = ScaleInvariantSignalDistortionRatio()

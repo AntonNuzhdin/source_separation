@@ -4,7 +4,9 @@ from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.metrics.utils import calc_cer, calc_wer
 from src.trainer.base_trainer import BaseTrainer
-from src.metrics import SISNRi, SISDR, PESQ, SDRi, STOI
+from src.metrics import SISNRi, SISDRi, PESQ, SDRi, STOI
+from torch import Tensor
+import random
 
 
 class Trainer(BaseTrainer):
@@ -15,7 +17,7 @@ class Trainer(BaseTrainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.sisnri = SISNRi()
-        self.sisdr = SISDR()
+        self.sisdr = SISDRi()
         self.pesq = PESQ(fs=16000)
         self.sdri = SDRi()
         self.stoi = STOI(fs=16000)
@@ -68,7 +70,8 @@ class Trainer(BaseTrainer):
             metrics.update(met.name, met(**batch))
         return batch
 
-    def _log_batch(self, batch_idx, batch, mode="train"):
+    def _log_batch(self, s1_audio: Tensor, s2_audio: Tensor, output_spk1: Tensor,
+                   output_spk2: Tensor, mix_audio: Tensor, mode="train", **batch):
         """
         Log data from batch. Calls self.writer.add_* to log data
         to the experiment tracker.
@@ -81,6 +84,42 @@ class Trainer(BaseTrainer):
                 rules to apply.
         """
         if mode != "train":
-            self.log_predictions(**batch)
+            self._log_predictions(**batch)
+            self._log_input_audio(**batch)
+        else:
+            self._log_input_audio(**batch)
 
-    # def _log_predictions(self, batch_idx, batch, mode='train'):
+    def _log_input_audio(self, s1_audio: Tensor, s2_audio: Tensor, mix_audio: Tensor):
+        cnt = min(len(s1_audio), len(s2_audio), len(mix_audio))
+        i = random.randint(0, cnt - 1)
+        self.writer.add_audio("Audio1", s1_audio[i], 16000)
+        self.writer.add_audio("Audio2", s2_audio[i], 16000)
+        self.writer.add_audio("Mix_audio", mix_audio[i], 16000)
+
+    def _log_predictions(self, s1_audio: Tensor, s2_audio: Tensor, output_spk1: Tensor,
+                         output_spk2: Tensor, mix_audio: Tensor):
+        cnt = min(len(s1_audio), len(s2_audio), len(output_spk1), len(output_spk2), len(mix_audio))
+        i = random.randint(0, cnt - 1)
+        self.writer.add_audio("Audio1", s1_audio[i], 16000)
+        self.writer.add_audio("Predicted1", output_spk1[i], 16000)
+
+        self.writer.add_audio("Audio2", s2_audio[i], 16000)
+        self.writer.add_audio("Predicted2", output_spk2[i], 16000)
+
+        self.writer.add_audio("Mix_audio", mix_audio[i], 16000)
+
+        self.writer.add_scalar("SISNRi", SISNRi(
+            s1_audio[i], s2_audio[i], mix_audio[i], output_spk1[i], output_spk2[i]
+        ))
+        self.writer.add_scalar("SISDRi", SISDRi(
+            s1_audio[i], s2_audio[i], mix_audio[i], output_spk1[i], output_spk2[i]
+        ))
+        self.writer.add_scalar("PESQ", PESQ(
+            s1_audio[i], s2_audio[i], mix_audio[i], output_spk1[i], output_spk2[i]
+        ))
+        self.writer.add_scalar("SDRi", SDRi(
+            s1_audio[i], s2_audio[i], mix_audio[i], output_spk1[i], output_spk2[i]
+        ))
+        self.writer.add_scalar("STOI", STOI(
+            s1_audio[i], s2_audio[i], mix_audio[i], output_spk1[i], output_spk2[i]
+        ))

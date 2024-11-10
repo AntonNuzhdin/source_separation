@@ -1,8 +1,8 @@
-from src.metrics.all_metrics import SISNRi, SISDR, PESQ, SDRi, STOI
+from src.metrics.all_metrics import SISNRi, SISDRi, PESQ, SDRi, STOI
 
 __all__ = [
     "SISNRi",
-    "SISDR",
+    "SISDRi",
     "PESQ",
     "SDRi",
     "STOI",
