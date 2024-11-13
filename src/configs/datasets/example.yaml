@@ -1,10 +1,8 @@
 train:
   _target_: src.datasets.SourceSeparationDataset
   part: "train"
-  limit: 2
   data_dir: "/Users/timurkin/Downloads/dla_dataset"
 val:
   _target_: src.datasets.SourceSeparationDataset
   part: "val"
-  limit: 2
   data_dir: "/Users/timurkin/Downloads/dla_dataset"

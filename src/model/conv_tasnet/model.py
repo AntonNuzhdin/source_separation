@@ -101,5 +101,5 @@ class ConvTasNet(nn.Module):
         separated = self.conv_tasnet(mix_audio)
         return {
             'speaker_1': separated[:, 0, :].squeeze(1),
-            'speaker_2': separated[:, 1:].squeeze(1)
+            'speaker_2': separated[:, 1, :].squeeze(1)
         }
