@@ -1,13 +1,13 @@
+from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
 from torchmetrics.audio import (
     ScaleInvariantSignalDistortionRatio,
-    PerceptualEvaluationSpeechQuality,
-    ShortTimeObjectiveIntelligibility,
     SignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio
 )
-from torch import Tensor
-import torch
 from src.metrics.base_metric import BaseMetric
+import torch
+from torch import Tensor
 
 
 class SISNRi(BaseMetric):
@@ -29,8 +29,10 @@ class SISNRi(BaseMetric):
         sisnri_s1 = sisnr_s1_s1 - sisnr_mix_s1
         sisnri_s2 = sisnr_s2_s2 - sisnr_mix_s2
 
-        loss = torch.maximum(torch.tensor((sisnri_s1 + sisnri_s2) / 2), torch.tensor((sisnr_s1_s2 + sisnr_s2_s1) / 2))
-        return loss.mean()
+        result_metrics = torch.maximum(
+            torch.tensor((sisnri_s1 + sisnri_s2) / 2),
+            torch.tensor((sisnr_s1_s2 + sisnr_s2_s1) / 2))
+        return result_metrics.mean()
 
 
 class SISDRi(BaseMetric):
@@ -52,12 +54,14 @@ class SISDRi(BaseMetric):
         sisdri_s1 = sisdr_s1_s1 - sisdr_mix_s1
         sisdri_s2 = sisdr_s2_s2 - sisdr_mix_s2
 
-        loss = torch.maximum(torch.tensor((sisdri_s1 + sisdri_s2) / 2), torch.tensor((sisdr_s1_s2 + sisdr_s2_s1) / 2))
-        return loss.mean()
+        result_metrics = torch.maximum(
+            torch.tensor((sisdri_s1 + sisdri_s2) / 2),
+            torch.tensor((sisdr_s1_s2 + sisdr_s2_s1) / 2))
+        return result_metrics.mean()
 
 
 class PESQ(BaseMetric):
-    def __init__(self, fs: int, mode: str = 'wb', *args, **kwargs) -> None:
+    def __init__(self, fs, mode: str = 'wb', *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.pesq = PerceptualEvaluationSpeechQuality(fs=fs, mode=mode)
 
@@ -75,8 +79,10 @@ class PESQ(BaseMetric):
         pesqi_s1 = pesq_s1_s1 - pesq_mix_s1
         pesqi_s2 = pesq_s2_s2 - pesq_mix_s2
 
-        loss = torch.maximum(torch.tensor((pesqi_s1 + pesqi_s2) / 2), torch.tensor((pesq_s1_s2 + pesq_s2_s1) / 2))
-        return loss.mean()
+        result_metrics = torch.maximum(
+            torch.tensor((pesqi_s1 + pesqi_s2) / 2),
+            torch.tensor((pesq_s1_s2 + pesq_s2_s1) / 2))
+        return result_metrics.mean()
 
 
 class SDRi(BaseMetric):
@@ -98,12 +104,12 @@ class SDRi(BaseMetric):
         sdri_s1 = sdr_s1_s1 - sdr_mix_s1
         sdri_s2 = sdr_s2_s2 - sdr_mix_s2
 
-        loss = torch.maximum(torch.tensor((sdri_s1 + sdri_s2) / 2), torch.tensor((sdr_s1_s2 + sdr_s2_s1) / 2))
-        return loss.mean()
+        result_metrics = torch.maximum(torch.tensor((sdri_s1 + sdri_s2) / 2), torch.tensor((sdr_s1_s2 + sdr_s2_s1) / 2))
+        return result_metrics.mean()
 
 
 class STOI(BaseMetric):
-    def __init__(self, fs: int, extended: bool = False, *args, **kwargs) -> None:
+    def __init__(self, fs, extended: bool = False, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.stoi = ShortTimeObjectiveIntelligibility(fs=fs, extended=extended, *args, **kwargs)
 
@@ -121,5 +127,7 @@ class STOI(BaseMetric):
         stoii_s1 = stoi_s1_s1 - stoi_mix_s1
         stoii_s2 = stoi_s2_s2 - stoi_mix_s2
 
-        loss = torch.maximum(torch.tensor((stoii_s1 + stoii_s2) / 2), torch.tensor((stoi_s1_s2 + stoi_s2_s1) / 2))
-        return loss.mean()
+        result_metrics = torch.maximum(
+            torch.tensor((stoii_s1 + stoii_s2) / 2),
+            torch.tensor((stoi_s1_s2 + stoi_s2_s1) / 2))
+        return result_metrics.mean()

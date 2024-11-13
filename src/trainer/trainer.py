@@ -14,13 +14,22 @@ class Trainer(BaseTrainer):
     Trainer class. Defines the logic of batch logging and processing.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, config, *args, **kwargs):
+        super().__init__(config=config, *args, **kwargs)
+
+        pesq_config = next((conf for conf in config.metrics.inference if conf["name"] == "PESQ"), None)
+        stoi_config = next((conf for conf in config.metrics.inference if conf["name"] == "STOI"), None)
+
         self.sisnri = SISNRi()
         self.sisdr = SISDRi()
-        self.pesq = PESQ(fs=16000)
+
+        if pesq_config:
+            self.pesq = PESQ(fs=pesq_config["fs"], mode=pesq_config["mode"])
+
+        if stoi_config:
+            self.stoi = STOI(fs=stoi_config["fs"], extended=stoi_config.get("extended", False))
+
         self.sdri = SDRi()
-        self.stoi = STOI(fs=16000)
 
     def process_batch(self, batch, metrics: MetricTracker):
         """
@@ -108,18 +117,18 @@ class Trainer(BaseTrainer):
 
         self.writer.add_audio("Mix_audio", mix_audio[i], 16000)
 
-        self.writer.add_scalar("SISNRi", SISNRi(
+        self.writer.add_scalar("SISNRi", self.sisnri(
             s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
         ))
-        self.writer.add_scalar("SISDRi", SISDRi(
+        self.writer.add_scalar("SISDRi", self.sisdr(
             s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
         ))
-        self.writer.add_scalar("PESQ", PESQ(
+        self.writer.add_scalar("PESQ", self.pesq(
             s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
         ))
-        self.writer.add_scalar("SDRi", SDRi(
+        self.writer.add_scalar("SDRi", self.sdri(
             s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
         ))
-        self.writer.add_scalar("STOI", STOI(
+        self.writer.add_scalar("STOI", self.stoi(
             s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
         ))

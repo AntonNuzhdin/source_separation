@@ -57,10 +57,3 @@ class gLN(nn.Module):
         mean = torch.mean(x, (1, 2), keepdim=True)
         sqrt_var = torch.sqrt(torch.mean((x - mean) ** 2, (1, 2), keepdim=True) + 1e-6)
         return self.w * (x - mean) / sqrt_var + self.b
-
-
-def choice_activation(self, msk_activate: str):
-    if msk_activate == "sigmoid":
-        return nn.Sigmoid()
-    elif msk_activate == "relu":
-        return nn.ReLU()

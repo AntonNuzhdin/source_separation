@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from src.model.conv_tasnet.utils import choice_activation, gLN, Conv1DBlock
+from src.model.conv_tasnet.utils import gLN, Conv1DBlock
 
 
 class Separation(nn.Module):
@@ -13,8 +13,7 @@ class Separation(nn.Module):
         n_feats: int,
         n_hidden: int,
         n_layers: int,
-        n_stacks: int,
-        # msk_activate: str,
+        n_stacks: int
     ):
         super().__init__()
 
@@ -36,7 +35,7 @@ class Separation(nn.Module):
 
         self.output_prelu = nn.PReLU()
         self.output_conv = nn.Conv1d(n_feats, in_dim * n_sources, kernel_size=1)
-        self.mask_activate = nn.ReLU()
+        self.mask_activate = nn.Sigmoid()
 
     def stack_layers(self):
         layers = []

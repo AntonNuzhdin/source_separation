@@ -26,7 +26,7 @@ class SISNR_LOSS(nn.Module):
                              (sisnr_s1_s2 + sisnr_s2_s1) / 2)
 
         return {
-            "loss": loss.mean()
+            "loss": -loss.mean()
         }
 
 
@@ -48,5 +48,5 @@ class SISDR_LOSS(nn.Module):
                              (sisdr_s1_s2 + sisdr_s2_s1) / 2)
 
         return {
-            "loss": loss.mean()
+            "loss": -loss.mean()
         }
