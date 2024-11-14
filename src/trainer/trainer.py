@@ -116,18 +116,18 @@ class Trainer(BaseTrainer):
 
         self.writer.add_audio("Mix_audio", mix_audio[i], 16000)
 
-        self.writer.add_scalar("SISNRi", self.sisnri(
-            s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
-        ))
-        self.writer.add_scalar("SISDRi", self.sisdr(
-            s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
-        ))
-        self.writer.add_scalar("PESQ", self.pesq(
-            s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
-        ))
-        self.writer.add_scalar("SDRi", self.sdri(
-            s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
-        ))
-        self.writer.add_scalar("STOI", self.stoi(
-            s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
-        ))
+        # self.writer.add_scalar("SISNRi", self.sisnri(
+        #     s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
+        # ))
+        # self.writer.add_scalar("SISDRi", self.sisdr(
+        #     s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
+        # ))
+        # self.writer.add_scalar("PESQ", self.pesq(
+        #     s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
+        # ))
+        # self.writer.add_scalar("SDRi", self.sdri(
+        #     s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
+        # ))
+        # self.writer.add_scalar("STOI", self.stoi(
+        #     s1_audio[i], s2_audio[i], mix_audio[i], speaker_1[i], speaker_2[i]
+        # ))
