@@ -1,8 +1,8 @@
 train:
   _target_: src.datasets.SourceSeparationDataset
   part: "train"
-  data_dir: "/Users/timurkin/Downloads/dla_dataset"
+  data_dir: "/home/admin/dla_dataset"
 val:
   _target_: src.datasets.SourceSeparationDataset
   part: "val"
-  data_dir: "/Users/timurkin/Downloads/dla_dataset"
+  data_dir: "/home/admin/dla_dataset"

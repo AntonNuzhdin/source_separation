@@ -1,3 +1,4 @@
+'''
 import json
 import re
 from pathlib import Path
@@ -49,3 +50,4 @@ class CommonVoiceDataset(BaseDataset):
             with index_path.open("w") as f:
                 json.dump(index, f, indent=2)
         return index
+'''
