@@ -26,6 +26,7 @@ class Model(nn.Module):
             kernel_size=encoder_kernel_size,
             stride=encoder_kernel_size // 2,
             padding=encoder_kernel_size // 2,
+            bias=False,
         )
 
         self.separation = Separation(
@@ -44,34 +45,26 @@ class Model(nn.Module):
             kernel_size=encoder_kernel_size,
             stride=encoder_kernel_size // 2,
             padding=encoder_kernel_size // 2,
+            bias=False,
         )
 
-    def forward(self, x):
-        batch_size, num_channels, num_frames = x.shape
-        num_remainings = num_frames - (num_frames // self.enc_stride * self.enc_stride)
+    def forward(self, input_tensor):
+        batch_size, channels, total_frames = input_tensor.size()
+        remaining_frames = total_frames % self.enc_stride
 
-        if num_remainings > 0:
-            num_paddings = self.enc_stride - num_remainings
-            pad = torch.zeros(
-                batch_size,
-                num_channels,
-                num_paddings,
-                dtype=x.dtype,
-                device=x.device,
-            )
-            x = torch.cat([x, pad], 2)
+        if remaining_frames > 0:
+            input_tensor = F.pad(input_tensor, (0, self.enc_stride - remaining_frames))
 
-        num_padded_frames = x.shape[2]
-        feats = self.encoder(x)
-        masked = self.separation(feats) * feats.unsqueeze(1)
-        masked = masked.view(batch_size * 2, self.encoder_dim, -1)
-        decoded = self.decoder(masked)
-        output = decoded.view(batch_size, 2, num_padded_frames)
+        feature_frames = self.encoder(input_tensor)
+        mask_output = self.separation(feature_frames) * feature_frames.unsqueeze(1)
+        reshaped_masked_output = mask_output.view(batch_size * 2, self.encoder_dim, -1)
 
-        if num_remainings > 0:
-            output = output[..., :-num_paddings]
+        decoded_output = self.decoder(reshaped_masked_output).view(batch_size, 2, input_tensor.size(2))
 
-        return output
+        if remaining_frames > 0:
+            decoded_output = decoded_output[..., :-(self.enc_stride - remaining_frames)]
+
+        return decoded_output
 
 
 class ConvTasNet(nn.Module):
@@ -103,7 +96,7 @@ class ConvTasNet(nn.Module):
             'speaker_1': separated[:, 0, :].squeeze(1),
             'speaker_2': separated[:, 1, :].squeeze(1)
         }
-    
+
     def __str__(self):
         all_parameters = sum([p.numel() for p in self.parameters()])
         trainable_parameters = sum(

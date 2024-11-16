@@ -15,14 +15,14 @@ lr_scheduler:
   optimizer: ${optimizer}
   mode: min
   factor: 0.5
-  patience: 600
+  patience: 7500
   verbose: true
 loss_function:
   _target_: src.loss.tmp_loss.SISDR_LOSS
 trainer:
-  log_step: 10
+  log_step: 100
   n_epochs: 100
-  epoch_len: 200
+  epoch_len: 2000
   device_tensors: ["mix_audio", "s1_audio", "s2_audio"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: cuda:0 # device name or "auto"
