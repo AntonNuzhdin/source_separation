@@ -95,8 +95,11 @@ class BaseDataset(Dataset):
         s1_audio = self.load_audio(s1_path)
         s2_audio = self.load_audio(s2_path)
 
-        s1_mouth = np.load(s1_mouth_path)
-        s2_mouth = np.load(s2_mouth_path)
+        # s1_mouth = np.load(s1_mouth_path)['data']
+        # s2_mouth = np.load(s2_mouth_path)['data']
+
+        emb_s1 = np.load(data_dict['embed_s1'])
+        emb_s2 = np.load(data_dict['embed_s2'])
 
         instance_data = {
             'mix_path': mix_path,
@@ -110,8 +113,10 @@ class BaseDataset(Dataset):
             'mix_audio': mix_audio,
             's1_audio': s1_audio,
             's2_audio': s2_audio,
-            's1_mouth': s1_mouth,
-            's2_mouth': s2_mouth
+            # 's1_mouth': s1_mouth,
+            # 's2_mouth': s2_mouth,
+            'emb_s1': emb_s1,
+            'emb_s2':emb_s2
         }
 
         # TODO: подумать нужно ли как-то предобрабатывать это все

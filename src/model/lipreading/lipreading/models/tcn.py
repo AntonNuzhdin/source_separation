@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 from torch.nn.utils import weight_norm
 import pdb
-from lipreading.models.swish import Swish
+
+from src.model.lipreading.lipreading.models.swish import Swish
 
 
 """Implements Temporal Convolutional Network (TCN)
@@ -24,7 +25,7 @@ class Chomp1d(nn.Module):
             return x[:, :, self.chomp_size//2:-self.chomp_size//2].contiguous()
         else:
             return x[:, :, :-self.chomp_size].contiguous()
-        
+
 
 class ConvBatchChompRelu(nn.Module):
     def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, relu_type, dwpw=False):
@@ -60,13 +61,13 @@ class ConvBatchChompRelu(nn.Module):
             return self.non_lin( out )
 
 
-        
+
 # --------- MULTI-BRANCH VERSION ---------------
 class MultibranchTemporalBlock(nn.Module):
-    def __init__(self, n_inputs, n_outputs, kernel_sizes, stride, dilation, padding, dropout=0.2, 
+    def __init__(self, n_inputs, n_outputs, kernel_sizes, stride, dilation, padding, dropout=0.2,
                  relu_type = 'relu', dwpw=False):
         super(MultibranchTemporalBlock, self).__init__()
-        
+
         self.kernel_sizes = kernel_sizes
         self.num_kernels = len( kernel_sizes )
         self.n_outputs_branch = n_outputs // self.num_kernels
@@ -78,7 +79,7 @@ class MultibranchTemporalBlock(nn.Module):
             cbcr = ConvBatchChompRelu( n_inputs, self.n_outputs_branch, k, stride, dilation, padding[k_idx], relu_type, dwpw=dwpw)
             setattr( self,'cbcr0_{}'.format(k_idx), cbcr )
         self.dropout0 = nn.Dropout(dropout)
-        
+
         for k_idx,k in enumerate( self.kernel_sizes ):
             cbcr = ConvBatchChompRelu( n_outputs, self.n_outputs_branch, k, stride, dilation, padding[k_idx], relu_type, dwpw=dwpw)
             setattr( self,'cbcr1_{}'.format(k_idx), cbcr )
@@ -86,7 +87,7 @@ class MultibranchTemporalBlock(nn.Module):
 
         # downsample?
         self.downsample = nn.Conv1d(n_inputs, n_outputs, 1) if (n_inputs//self.num_kernels) != n_outputs else None
-        
+
         # final relu
         if relu_type == 'relu':
             self.relu_final = nn.ReLU()
@@ -112,7 +113,7 @@ class MultibranchTemporalBlock(nn.Module):
             outputs.append( branch_convs(out0) )
         out1 = torch.cat(outputs, 1)
         out1 = self.dropout1( out1 )
-                
+
         # downsample?
         res = x if self.downsample is None else self.downsample(x)
 
@@ -132,24 +133,24 @@ class MultibranchTemporalConvNet(nn.Module):
             out_channels = num_channels[i]
 
 
-            padding = [ (s-1)*dilation_size for s in self.ksizes]            
-            layers.append( MultibranchTemporalBlock( in_channels, out_channels, self.ksizes, 
+            padding = [ (s-1)*dilation_size for s in self.ksizes]
+            layers.append( MultibranchTemporalBlock( in_channels, out_channels, self.ksizes,
                 stride=1, dilation=dilation_size, padding = padding, dropout=dropout, relu_type = relu_type,
                 dwpw=dwpw) )
 
         self.network = nn.Sequential(*layers)
 
     def forward(self, x):
-        return self.network(x)        
+        return self.network(x)
 # --------------------------------
 
 
 # --------------- STANDARD VERSION (SINGLE BRANCH) ------------------------
 class TemporalBlock(nn.Module):
-    def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2, 
+    def __init__(self, n_inputs, n_outputs, kernel_size, stride, dilation, padding, dropout=0.2,
                  symm_chomp = False, no_padding = False, relu_type = 'relu', dwpw=False):
         super(TemporalBlock, self).__init__()
-        
+
         self.no_padding = no_padding
         if self.no_padding:
             downsample_chomp_size = 2*padding-4
@@ -194,7 +195,7 @@ class TemporalBlock(nn.Module):
             elif relu_type == 'swish':
                 self.relu1 = Swish()
             self.dropout1 = nn.Dropout(dropout)
-            
+
             self.conv2 = nn.Conv1d(n_outputs, n_outputs, kernel_size,
                                                stride=stride, padding=padding, dilation=dilation)
             self.batchnorm2 = nn.BatchNorm1d(n_outputs)
@@ -206,8 +207,8 @@ class TemporalBlock(nn.Module):
             elif relu_type == 'swish':
                 self.relu2 = Swish()
             self.dropout2 = nn.Dropout(dropout)
-            
-      
+
+
             if self.no_padding:
                 self.net = nn.Sequential(self.conv1, self.batchnorm1, self.relu1, self.dropout1,
                                          self.conv2, self.batchnorm2, self.relu2, self.dropout2)
@@ -246,7 +247,7 @@ class TemporalConvNet(nn.Module):
             layers.append( TemporalBlock(in_channels, out_channels, self.ksize, stride=1, dilation=dilation_size,
                                      padding=(self.ksize-1) * dilation_size, dropout=dropout, symm_chomp = True,
                                      no_padding = False, relu_type=relu_type, dwpw=dwpw) )
-            
+
         self.network = nn.Sequential(*layers)
 
     def forward(self, x):

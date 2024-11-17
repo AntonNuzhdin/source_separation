@@ -1,3 +1,3 @@
 _target_: src.model.conv_tasnet.model.ConvTasNet
-# n_feats: 128
-# fc_hidden: 512
+n_sources: 1
+use_visual: True

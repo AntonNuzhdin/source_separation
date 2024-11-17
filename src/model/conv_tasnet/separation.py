@@ -92,23 +92,24 @@ class Separation(nn.Module):
             visual_features, _ = self.video_proc(embed_video)
             if visual_features.size(-1) != audio_inputs.size(-1):
                 visual_features = F.interpolate(
-                    visual_features.permute(0, 2, 1), size=audio_inputs.size(-1), mode='linear'
+                    visual_features.permute(0, 2, 1), size=audio_inputs.size(-1), mode='nearest'
                 ).permute(0, 2, 1)
 
-        fused_features = (
-            self.multimoda_fusion(audio_inputs, visual_features)
-            if visual_features is not None
-            else audio_inputs
-        )
-
         accumulated_output = 0.0
-        for conv_block in self.conv_layers:
-            residual_output, skip_connection = conv_block(fused_features)
+        for i, conv_block in enumerate(self.conv_layers):
+            if i == 8 and embed_video is not None:
+                residual_output, skip_connection = conv_block(audio_inputs)
+                residual_output = self.multimoda_fusion(residual_output, visual_features)
+                audio_inputs = audio_inputs + residual_output
+                accumulated_output = accumulated_output + skip_connection
 
-            if residual_output is not None:
-                fused_features = fused_features + residual_output
+            else:
+                residual_output, skip_connection = conv_block(audio_inputs)
 
-            accumulated_output = accumulated_output + skip_connection
+                if residual_output is not None:
+                    audio_inputs = audio_inputs + residual_output
+
+                accumulated_output = accumulated_output + skip_connection
 
         final_output = self.out(accumulated_output)
         return final_output.view(batch_size, self.n_sources, self.in_dim, -1)

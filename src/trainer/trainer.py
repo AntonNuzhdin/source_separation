@@ -1,11 +1,14 @@
-from pathlib import Path
-import pandas as pd
+import torch
+from torch import Tensor
+import random
+from torch.amp import autocast
+from torch.cuda.amp import GradScaler
+
 from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
 from src.metrics import SISNRi, SISDRi, PESQ, SDRi, STOI
-from torch import Tensor
-import random
+
 
 
 class Trainer(BaseTrainer):
@@ -29,6 +32,7 @@ class Trainer(BaseTrainer):
             self.stoi = STOI(fs=stoi_config["fs"], extended=stoi_config.get("extended", False))
 
         self.sdri = SDRi()
+        self.scaler = GradScaler()
 
     def process_batch(self, batch, metrics: MetricTracker):
         """
@@ -68,8 +72,8 @@ class Trainer(BaseTrainer):
             batch["loss"].backward()
             self._clip_grad_norm()
             self.optimizer.step()
-            if self.lr_scheduler is not None:
-                self.lr_scheduler.step(batch["loss"])
+            # if self.lr_scheduler is not None:
+            #     self.lr_scheduler.step(batch["loss"])
 
         # update metrics for each loss (in case of multiple losses)
         for loss_name in self.config.writer.loss_names:

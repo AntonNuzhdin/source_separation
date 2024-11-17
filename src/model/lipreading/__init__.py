@@ -1,0 +1,1 @@
+from src.model.lipreading.main import get_visual_embeddings

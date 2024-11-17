@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
 
-from src.model.conv_tasnet.utils import gLN
 from src.model.conv_tasnet.separation import Separation
-from src.model.lipreading.lipreading_model.main import get_visual_embeddings
+
 
 class Model(nn.Module):
     def __init__(
@@ -15,7 +16,8 @@ class Model(nn.Module):
         separation_n_hidden,
         separation_n_layers,
         separation_n_stacks,
-        embed_dim
+        embed_dim,
+        n_sources
     ):
         super().__init__()
         self.encoder_kernel_size = encoder_kernel_size
@@ -32,7 +34,7 @@ class Model(nn.Module):
 
         self.separation = Separation(
             in_dim=encoder_dim,
-            n_sources=2,
+            n_sources=n_sources,
             kernel_size=separation_kernel_size,
             n_feats=separation_n_feats,
             n_hidden=separation_n_hidden,
@@ -51,20 +53,23 @@ class Model(nn.Module):
         )
 
     def forward(self, input_tensor, embed_video=None):
-        batch_size, channels, total_frames = input_tensor.size()
-        remaining_frames = total_frames % self.enc_stride
+        if embed_video == None:
+            batch_size, _, _ = input_tensor.size()
 
-        if remaining_frames > 0:
-            input_tensor = F.pad(input_tensor, (0, self.enc_stride - remaining_frames))
+            feature_frames = self.encoder(input_tensor)
+            mask_output = self.separation(feature_frames, embed_video=embed_video) * feature_frames.unsqueeze(1)
+            reshaped_masked_output = mask_output.view(batch_size * 2, self.encoder_dim, -1)
+
+            decoded_output = self.decoder(reshaped_masked_output).view(batch_size, 2, input_tensor.size(2))
+            return decoded_output
+
+        batch_size, _, _ = input_tensor.size()
 
         feature_frames = self.encoder(input_tensor)
         mask_output = self.separation(feature_frames, embed_video=embed_video) * feature_frames.unsqueeze(1)
-        reshaped_masked_output = mask_output.view(batch_size * 2, self.encoder_dim, -1)
+        reshaped_masked_output = mask_output.view(batch_size, self.encoder_dim, -1)
 
-        decoded_output = self.decoder(reshaped_masked_output).view(batch_size, 2, input_tensor.size(2))
-
-        if remaining_frames > 0:
-            decoded_output = decoded_output[..., :-(self.enc_stride - remaining_frames)]
+        decoded_output = self.decoder(reshaped_masked_output).view(batch_size, 1, input_tensor.size(2))
 
         return decoded_output
 
@@ -80,7 +85,8 @@ class ConvTasNet(nn.Module):
         separation_n_layers=8,
         separation_n_stacks=3,
         embed_dim=512,
-        use_visual=False,
+        n_sources=1,
+        use_visual=True,
     ):
         super().__init__()
         self.conv_tasnet = Model(
@@ -91,20 +97,22 @@ class ConvTasNet(nn.Module):
             separation_n_hidden,
             separation_n_layers,
             separation_n_stacks,
-            embed_dim
+            embed_dim,
+            n_sources,
         )
         self.use_visual = use_visual
 
-    def forward(self, mix_audio, s1_mouth, s2_mouth, **batch):
-        if self.use_visual:
-            s1_visual_embeddings = get_visual_embeddings(batch['s1_mouth'])
-            s2_visual_embeddings = get_visual_embeddings(batch['s2_mouth'])
-            embed_video = torch.stack((s1_visual_embeddings, s2_visual_embeddings))
-        else:
-            embed_video = None
-
+    def forward(self, mix_audio, emb_s1, emb_s2, **batch):
         mix_audio = mix_audio.unsqueeze(1)
-        separated = self.conv_tasnet(mix_audio, embed_video=embed_video)
+        if self.use_visual:
+            separated_1 = self.conv_tasnet(mix_audio, embed_video=emb_s1)
+            separated_2 = self.conv_tasnet(mix_audio, embed_video=emb_s2)
+            return {
+                'speaker_1': separated_1.squeeze(1),
+                'speaker_2': separated_2.squeeze(1)
+            }
+        separated = self.conv_tasnet(mix_audio, embed_video=None)
+
         return {
             'speaker_1': separated[:, 0, :].squeeze(1),
             'speaker_2': separated[:, 1, :].squeeze(1)

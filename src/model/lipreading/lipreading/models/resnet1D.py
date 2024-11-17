@@ -3,7 +3,7 @@ import math
 import torch.nn as nn
 import pdb
 
-from lipreading.models.swish import Swish
+from src.model.lipreading.lipreading.models.swish import Swish
 
 def conv3x3(in_planes, out_planes, stride=1):
     return nn.Conv1d(in_planes, out_planes, kernel_size=3, stride=stride,
@@ -52,7 +52,7 @@ class BasicBlock1D(nn.Module):
 
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm1d(planes)
- 
+
         self.downsample = downsample
         self.stride = stride
 
@@ -114,8 +114,8 @@ class ResNet1D(nn.Module):
 
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = self.downsample_block( inplanes = self.inplanes, 
-                                                 outplanes = planes * block.expansion, 
+            downsample = self.downsample_block( inplanes = self.inplanes,
+                                                 outplanes = planes * block.expansion,
                                                  stride = stride )
 
         layers = []

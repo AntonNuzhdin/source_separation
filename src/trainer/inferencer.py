@@ -52,7 +52,6 @@ class Inferencer(BaseTrainer):
         assert (
             skip_model_load or config.inferencer.get("from_pretrained") is not None
         ), "Provide checkpoint or set skip_model_load=True"
-
         self.config = config
         self.cfg_trainer = self.config.inferencer
 

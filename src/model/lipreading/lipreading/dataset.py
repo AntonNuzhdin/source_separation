@@ -5,7 +5,8 @@ import random
 import librosa
 import numpy as np
 import sys
-from lipreading.utils import read_txt_lines
+
+from src.model.lipreading.lipreading.utils import read_txt_lines
 
 
 class MyDataset(object):
@@ -100,11 +101,11 @@ class MyDataset(object):
         # read info txt file (to see duration of word, to be used to do temporal cropping)
         info_txt = os.path.join(self._annonation_direc, *filename.split('/')[self.label_idx:] )  # swap base folder
         info_txt = os.path.splitext( info_txt )[0] + '.txt'   # swap extension
-        info = read_txt_lines(info_txt)  
+        info = read_txt_lines(info_txt)
 
         utterance_duration = float( info[4].split(' ')[1] )
         half_interval = int( utterance_duration/2.0 * self.fps)  # num frames of utterance / 2
-                
+
         n_frames = raw_data.shape[0]
         mid_idx = ( n_frames -1 ) // 2  # video has n frames, mid point is (n-1)//2 as count starts with 0
         left_idx = random.randint(0, max(0,mid_idx-half_interval-1)  )   # random.randint(a,b) chooses in [a,b]

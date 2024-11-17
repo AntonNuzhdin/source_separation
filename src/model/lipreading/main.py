@@ -3,9 +3,9 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from lipreading.utils import load_json, calculateNorm2
-from lipreading.model import Lipreading
-from lipreading.dataloaders import get_preprocessing_pipelines
+from src.model.lipreading.lipreading.utils import load_json
+from src.model.lipreading.lipreading.model import Lipreading
+from src.model.lipreading.lipreading.dataloaders import get_preprocessing_pipelines
 
 
 PATH = os.path.dirname(os.path.abspath(__file__))
@@ -29,6 +29,7 @@ def load_model(load_path, model, optimizer = None, allow_size_mismatch = False):
             del loaded_state_dict[k]
 
     model.load_state_dict(loaded_state_dict, strict = not allow_size_mismatch)
+    print(f'Loaded lipreading model from {load_path}')
     if optimizer is not None:
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         return model, optimizer, checkpoint['epoch_idx'], checkpoint
@@ -74,13 +75,12 @@ def load_model_from_json(config_path):
         use_boundary=use_boundary,
         extract_feats=True
     ).cuda()
-    # calculateNorm2(model)
     return model
 
-def extract_features_batch(model, mouth_patches_batch):
+def extract_features_batch_model(model, mouth_patches_batch):
     model.eval()
     preprocessing_func = get_preprocessing_pipelines(modality='video')['test']
-    processed_data_list = [preprocessing_func(np.load(mouth_patch)['data']) for mouth_patch in mouth_patches_batch]
+    processed_data_list = [preprocessing_func(mouth_patch) for mouth_patch in mouth_patches_batch]
 
     lengths = [data.shape[0] for data in processed_data_list]
 
@@ -95,16 +95,17 @@ def extract_features_batch(model, mouth_patches_batch):
     with torch.no_grad():
         features = model(torch.FloatTensor(batch_data)[:, None, :, :, :].cuda(), lengths=lengths)
 
-    return features.cpu().detach().numpy()
+    return features.detach()
 
 
 def get_visual_embeddings(mouth_patches_batch):
     model = load_model_from_json(CONFIG_PATH)
     model = load_model(os.path.join(PATH, 'weights', 'lrw_resnet18_dctcn_video_boundary.pth'), model, allow_size_mismatch=True)
-    features = extract_features_batch(model, mouth_patches_batch)
+    features = extract_features_batch_model(model, mouth_patches_batch)
     return features
 
-# def extract_features(model, mouth_patch_path):
+
+# def extract_features_one(model, mouth_patch_path):
 #     model.eval()
 #     preprocessing_func = get_preprocessing_pipelines(modality='video')['test']
 #     data = preprocessing_func(np.load(mouth_patch_path)['data'])  # data: TxHxW
@@ -113,8 +114,38 @@ def get_visual_embeddings(mouth_patches_batch):
 #     return features.cpu().detach().numpy()
 
 
-# def get_visual_embeddings(mouth_patch_path):
+# def get_visual_embeddings_one(mouth_patch_path):
 #     model = load_model_from_json(CONFIG_PATH)
 #     model = load_model(os.path.join(PATH, 'weights', 'lrw_resnet18_dctcn_video_boundary.pth'), model, allow_size_mismatch=True)
-#     features = extract_features(model, mouth_patch_path)
+#     features = extract_features_one(model, mouth_patch_path)
 #     return features
+
+
+def extract_features_batch(model, mouth_patch_paths):
+  model.eval()
+  preprocessing_func = get_preprocessing_pipelines(modality='video')['test']
+
+  data_batch = []
+  lengths = []
+  for path in mouth_patch_paths:
+    data = np.load(path)['data'] # data: TxHxW
+    data_batch.append(data)
+    lengths.append(data.shape[0])
+
+
+  data_tensor = torch.FloatTensor(np.stack(data_batch)).cuda()
+  data_tensor = data_tensor.unsqueeze(1)
+
+  with torch.no_grad():
+    features = model(data_tensor, lengths=lengths)
+
+  return features.cpu().detach().numpy()
+
+
+def get_visual_embeddings_batch(mouth_patch_paths):
+  model = load_model_from_json(CONFIG_PATH)
+  model = load_model(os.path.join(PATH, 'weights', 'lrw_resnet18_dctcn_video_boundary.pth'), model, allow_size_mismatch=True)
+  model.cuda()
+
+  features = extract_features_batch(model, mouth_patch_paths)
+  return features
