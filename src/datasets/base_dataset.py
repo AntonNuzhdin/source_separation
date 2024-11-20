@@ -85,8 +85,8 @@ class BaseDataset(Dataset):
         mix_path = data_dict['mix_path']
         s1_path = data_dict['s1_path']
         s2_path = data_dict['s2_path']
-        s1_mouth_path = data_dict['s1_mouth_path']
-        s2_mouth_path = data_dict['s2_mouth_path']
+        # s1_mouth_path = data_dict['s1_mouth_path']
+        # s2_mouth_path = data_dict['s2_mouth_path']
         mix_audio_length = data_dict['mix_audio_length']
         s1_audio_length = data_dict['s1_audio_length']
         s2_audio_length = data_dict['s2_audio_length']
@@ -98,15 +98,15 @@ class BaseDataset(Dataset):
         # s1_mouth = np.load(s1_mouth_path)['data']
         # s2_mouth = np.load(s2_mouth_path)['data']
 
-        emb_s1 = np.load(data_dict['embed_s1'])
-        emb_s2 = np.load(data_dict['embed_s2'])
+        # emb_s1 = np.load(data_dict['embed_s1'])
+        # emb_s2 = np.load(data_dict['embed_s2'])
 
         instance_data = {
             'mix_path': mix_path,
             's1_path': s1_path,
             's2_path': s2_path,
-            's1_mouth_path': s1_mouth_path,
-            's2_mouth_path': s2_mouth_path,
+            # 's1_mouth_path': s1_mouth_path,
+            # 's2_mouth_path': s2_mouth_path,
             'mix_audio_length': mix_audio_length,
             's1_audio_length': s1_audio_length,
             's2_audio_length': s2_audio_length,
@@ -115,8 +115,8 @@ class BaseDataset(Dataset):
             's2_audio': s2_audio,
             # 's1_mouth': s1_mouth,
             # 's2_mouth': s2_mouth,
-            'emb_s1': emb_s1,
-            'emb_s2':emb_s2
+            # 'emb_s1': emb_s1,
+            # 'emb_s2':emb_s2
         }
 
         # TODO: подумать нужно ли как-то предобрабатывать это все

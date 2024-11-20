@@ -3,7 +3,9 @@ import warnings
 import hydra
 import torch
 from hydra.utils import instantiate
-
+from pathlib import Path
+import torchaudio
+from src.datasets.custom_dataset import CustomDatasetInference
 from src.datasets.data_utils import get_dataloaders
 from src.trainer import Inferencer
 from src.utils.init_utils import set_random_seed
@@ -29,36 +31,27 @@ def main(config):
     else:
         device = config.inferencer.device
 
-    # setup text_encoder
-    text_encoder = instantiate(config.text_encoder)
+    dataloaders, _ = get_dataloaders(config, device)
 
-    # setup data_loader instances
-    # batch_transforms should be put on device
-    dataloaders, batch_transforms = get_dataloaders(config, text_encoder, device)
-
-    # build model architecture, then print to console
-    model = instantiate(config.model, n_tokens=len(text_encoder)).to(device)
+    model = instantiate(config.model).to(device)
+    model.eval()
     print(model)
 
-    # get metrics
     metrics = {"inference": []}
     for metric_config in config.metrics.get("inference", []):
-        # use text_encoder in metrics
         metrics["inference"].append(
-            instantiate(metric_config, text_encoder=text_encoder)
+            instantiate(metric_config)
         )
 
-    # save_path for model predictions
     save_path = ROOT_PATH / "data" / "saved" / config.inferencer.save_path
     save_path.mkdir(exist_ok=True, parents=True)
 
     inferencer = Inferencer(
         model=model,
         config=config,
+        text_encoder=None,
         device=device,
         dataloaders=dataloaders,
-        text_encoder=text_encoder,
-        batch_transforms=batch_transforms,
         save_path=save_path,
         metrics=metrics,
         skip_model_load=False,

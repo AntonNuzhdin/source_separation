@@ -1,8 +1,8 @@
 defaults:
-  - model: visual_convtasnet
+  - model: convtasnet
   - writer: wandb
   - metrics: example
-  - datasets: example
+  - datasets: conv_v2
   - dataloader: example
   - _self_
 optimizer:
@@ -21,7 +21,7 @@ trainer:
   log_step: 50
   n_epochs: 100
   epoch_len: 2000
-  device_tensors: ["mix_audio", "s1_audio", "s2_audio", "emb_s1", "emb_s2"] # which tensors should be on device (ex. GPU)
+  device_tensors: ["mix_audio", "s1_audio", "s2_audio"] # which tensors should be on device (ex. GPU)
   resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: cuda:0 # device name or "auto"
   override: False # if True, will override the previous run with the same name
@@ -31,3 +31,4 @@ trainer:
   save_dir: "saved"
   max_grad_norm: 5
   seed: 1
+  from_pretrained: "/home/anton/conv_8_7.pth"

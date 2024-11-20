@@ -1,0 +1,12 @@
+_target_: src.model.dprnn.model.DPRNN
+encoder_dim: 256
+segment_size: 250
+overlap: 125
+hidden_dim: 128
+num_blocks: 6
+n_sources: 2
+
+
+# 4_883_969
+#3_601_793 - 128, 128
+#1_426_817 - 128, 64

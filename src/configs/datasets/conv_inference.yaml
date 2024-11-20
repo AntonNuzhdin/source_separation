@@ -1,0 +1,6 @@
+test:
+  _target_: src.datasets.CustomDatasetInference
+  # data_dir: "/home/anton/dla_test_dataset_wo_in_s2"
+
+  data_dir: "/home/anton/dla_test_dataset"
+  # data_dir: "/home/anton/dla_testing"

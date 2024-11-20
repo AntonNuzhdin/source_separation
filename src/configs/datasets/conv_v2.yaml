@@ -1,0 +1,8 @@
+train:
+  _target_: src.datasets.SourceSeparationDataset
+  part: "train_v2"
+  data_dir: "/home/anton/dla_dataset"
+val:
+  _target_: src.datasets.SourceSeparationDataset
+  part: "val_v2"
+  data_dir: "/home/anton/dla_dataset"

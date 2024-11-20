@@ -3,7 +3,8 @@ from tqdm.auto import tqdm
 
 from src.metrics.tracker import MetricTracker
 from src.trainer.base_trainer import BaseTrainer
-
+import numpy as np
+from scipy.io import wavfile
 
 class Inferencer(BaseTrainer):
     """
@@ -135,26 +136,32 @@ class Inferencer(BaseTrainer):
         # Some saving logic. This is an example
         # Use if you need to save predictions on disk
 
-        batch_size = batch["logits"].shape[0]
-        current_id = batch_idx * batch_size
+        batch_size = batch["mix_audio"].shape[0]
 
         for i in range(batch_size):
             # clone because of
             # https://github.com/pytorch/pytorch/issues/1995
-            logits = batch["logits"][i].clone()
-            label = batch["labels"][i].clone()
-            pred_label = logits.argmax(dim=-1)
+            speaker_1 = batch["speaker_1"][i].clone().cpu().numpy()
+            speaker_2 = batch["speaker_2"][i].clone().cpu().numpy()
+            path = batch["mix_path"][i].split('/')[-1]
 
-            output_id = current_id + i
 
-            output = {
-                "pred_label": pred_label,
-                "label": label,
-            }
+            # Нормировка
+            # speaker_1 = speaker_1 / np.max(np.abs(speaker_1))
+            # speaker_2 = speaker_2 / np.max(np.abs(speaker_2))
+
 
             if self.save_path is not None:
                 # you can use safetensors or other lib here
-                torch.save(output, self.save_path / part / f"output_{output_id}.pth")
+                speaker_1_dir = self.save_path / part / "speaker_1"
+                speaker_2_dir = self.save_path / part / "speaker_2"
+                speaker_1_dir.mkdir(exist_ok=True, parents=True)
+                speaker_2_dir.mkdir(exist_ok=True, parents=True)
+
+                speaker_1_path = speaker_1_dir / path
+                speaker_2_path = speaker_2_dir / path
+                wavfile.write(speaker_1_path, 16000, speaker_1)
+                wavfile.write(speaker_2_path, 16000, speaker_2)
 
         return batch
 
@@ -190,5 +197,7 @@ class Inferencer(BaseTrainer):
                     part=part,
                     metrics=self.evaluation_metrics,
                 )
-
+        if self.save_path is not None:
+            dir_pred = self.save_path / part
+            print(f"Saved predictions to: {dir_pred}")
         return self.evaluation_metrics.result()

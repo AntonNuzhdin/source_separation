@@ -2,3 +2,4 @@
 from src.datasets.custom_dir_audio_dataset import CustomDirAudioDataset
 from src.datasets.librispeech_dataset import LibrispeechDataset
 from src.datasets.separation_dataset import SourceSeparationDataset
+from src.datasets.custom_dataset import CustomDatasetInference

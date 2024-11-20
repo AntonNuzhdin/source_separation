@@ -46,6 +46,7 @@ class PESQ(BaseMetric):
 
 class SDRi(BaseMetric):
     def __init__(self, *args, **kwargs) -> None:
+        name = kwargs.pop('name', None)
         super().__init__(*args, **kwargs)
         self.sdr = SignalDistortionRatio(*args, **kwargs)
 
@@ -57,6 +58,7 @@ class SDRi(BaseMetric):
 
 class STOI(BaseMetric):
     def __init__(self, fs, extended: bool = False, *args, **kwargs) -> None:
+        name = kwargs.pop('name', None)
         super().__init__(*args, **kwargs)
         self.stoi = ShortTimeObjectiveIntelligibility(fs=fs, extended=extended, *args, **kwargs)
 
