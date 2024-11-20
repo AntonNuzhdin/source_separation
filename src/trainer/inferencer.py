@@ -146,9 +146,8 @@ class Inferencer(BaseTrainer):
             path = batch["mix_path"][i].split('/')[-1]
 
 
-            # Нормировка
-            # speaker_1 = speaker_1 / np.max(np.abs(speaker_1))
-            # speaker_2 = speaker_2 / np.max(np.abs(speaker_2))
+            speaker_1 = speaker_1 / np.max(np.abs(speaker_1))
+            speaker_2 = speaker_2 / np.max(np.abs(speaker_2))
 
 
             if self.save_path is not None:
