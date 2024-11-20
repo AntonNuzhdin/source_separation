@@ -2,18 +2,9 @@ import torch
 
 def compute_metric(metric, s1_audio, s2_audio, speaker_1, speaker_2, mix_audio):
 
-    s1_flag = False
-    s2_flag = False
-
-    if s1_audio is not None:
-        s1_flag = True
-
-    if s2_audio is not None:
-        s2_flag = True
-
     result_metrics = []
 
-    if s1_flag:
+    if s1_audio is not None:
         min_length = min(
             s1_audio.shape[-1],
             speaker_1.shape[-1],
@@ -32,7 +23,7 @@ def compute_metric(metric, s1_audio, s2_audio, speaker_1, speaker_2, mix_audio):
         si_snr_i_speaker_1 = torch.max(m_s1_s1 - m_mix_s1, m_s2_s1 - m_mix_s1)
         result_metrics.append(si_snr_i_speaker_1.mean())
 
-    if s2_flag:
+    if s2_audio is not None:
         min_length = min(
             s2_audio.shape[-1],
             speaker_1.shape[-1],
