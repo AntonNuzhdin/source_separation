@@ -6,14 +6,17 @@ from src.metrics.all_metrics import SISNRi, SISDRi, PESQ, STOI, SDRi
 import argparse
 from pathlib import Path
 
+
 def load_audio(path, target_sr):
     if path is None:
         return None
+    path = str(path)
     audio_tensor, sr = torchaudio.load(path)
     audio_tensor = audio_tensor[0:1, :]
     if sr != target_sr:
         audio_tensor = torchaudio.functional.resample(audio_tensor, sr, target_sr)
     return audio_tensor
+
 
 def compute_metrics(args):
     metrics_list = [
@@ -123,6 +126,7 @@ def compute_metrics(args):
             print(f"{metric_name}: {avg_value:.4f}")
         else:
             print(f"No values computed for {metric_name}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compute metrics on inference")

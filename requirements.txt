@@ -3,6 +3,13 @@ torchvision==0.17.0
 torchaudio==2.2.0
 soundfile
 numpy==1.26.4
+wget==3.2
+opencv-python==4.10.0.84
+torchmetrics==1.6.0
+pesq==0.0.4
+pystoi==0.4.1
+gdown==5.2.0
+
 torch_audiomentations
 tqdm
 matplotlib

@@ -12,5 +12,5 @@ inferencer:
   seed: 1
   # from_pretrained: "/home/anton/conv_8_19.pth" # path to the pretrained model
   # from_pretrained: "src/convtasnet/convtasnet_weights.pth" # path to the pretrained model
-  from_pretrained: "src/convtasnet/convtasnet_weights.pth" # path to the pretrained model
+  from_pretrained: "src/weights/conv_8_7.pth" # path to the pretrained model
 
