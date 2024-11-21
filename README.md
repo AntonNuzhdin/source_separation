@@ -59,8 +59,9 @@ python inference.py datasets.test.data_dir=<Path to wavs>
 
 You can see the text in the terminal: 'Saved predictions to:' ... 
 
-Paste into next paragraph
-
+Insert what is written instead 
+... to the next point
+ 
 6. Calculate metrics
 
 ```bash
