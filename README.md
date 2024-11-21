@@ -57,7 +57,7 @@ python download.py
 python inference.py datasets.test.data_dir=<Path to wavs>
 ```
 
-You can see the text in the terminal: 'Saved predictions to:' <Path to predict> 
+You can see the text in the terminal: 'Saved predictions to:' ... <Path to predict> 
 
 Paste into next paragraph
 
