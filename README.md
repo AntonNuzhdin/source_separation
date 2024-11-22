@@ -10,13 +10,13 @@
 
 ## About
 
-This repository contains a template for solving Source Separation task with PyTorch. This template branch is a part of the [HSE DLA course](https://github.com/markovka17/dla) ASR homework. Some parts of the code are missing (or do not follow the most optimal design choices...) and students are required to fill these parts themselves (as well as writing their own models, etc.).
+This repository contains the custom realization of ConvTasNet and DPRNN source separation models.
 
 See the task assignment [here](https://github.com/markovka17/dla/tree/2024/project_avss).
 
 ## Installation
 
-Follow these steps to install the project:
+Follow these steps to run the project:
 
 ## How To Use
 
@@ -24,48 +24,77 @@ Follow these steps to install the project:
 
 ```bash
 git clone https://github.com/AntonNuzhdin/source_separation
-```
-1. Move to folder
-
-```bash
 cd source_separation
 ```
-
-2. Create and activate env
+1. Create and activate env
 
 ```bash
-conda create -n tmp python=3.11.10
+conda create -n source_separation python=3.11.10
 
-conda activate tmp
+conda activate source_separation
 ```
 
-3. Install requirements
+2. Install requirements
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Dowload model weights
+3. Dowload models weights
 
 ```bash
 python download.py 
 ```
 
-5. Run inference
+4. Run inference
 
+To run the ConvTasNet (our best model)
 ```bash
 python inference.py datasets.test.data_dir=<Path to wavs>
 ```
 
-You can see the text in the terminal: 'Saved predictions to:' ... 
+To run the additional DPRNN model
+```bash
+python inference.py datasets.test.data_dir=<Path to wavs> defaults.model=dprnn inferencer.from_pretrained="src/weights/dprnn_weights.pth"
+```
+
+You can see the text in the terminal: 'Saved predictions to:' {Path to predict}
 
 Insert what is written instead 
-... to the next point
+{Path to predict}
  
-6. Calculate metrics
+5. Calculate metrics
+   
+{Path to wavs}: the path to the directory with ground truth
+
+The structure should be like this:
+```
+{Path to wavs} / audio / ...
+
+{Path to wavs}
+├── audio
+│   ├── mix
+│   │   ├── FirstSpeakerID1_SecondSpeakerID1.wav # also may be flac or mp3
+│   │   ├── FirstSpeakerID2_SecondSpeakerID2.wav
+│   │   .
+│   │   .
+│   │   .
+│   │   └── FirstSpeakerIDn_SecondSpeakerIDn.wav
+│   ├── s1 # ground truth for the speaker s1, may not be given
+│   │   ├── FirstSpeakerID1_SecondSpeakerID1.wav # also may be flac or mp3
+│   │   ├── FirstSpeakerID2_SecondSpeakerID2.wav
+│   │   .
+│   │   .
+│   │   .
+│   │   └── FirstSpeakerIDn_SecondSpeakerIDn.wav
+│   └── s2 # ground truth for the speaker s2, may not be given
+│       ├── FirstSpeakerID1_SecondSpeakerID1.wav # also may be flac or mp3
+│       ├── FirstSpeakerID2_SecondSpeakerID2.wav
+│       .
+```
 
 ```bash
-python calc_metrics.py     --estimated_path <Path to predict>    --target_path <Path to wavs>    --target_sr 16000
+python calc_metrics.py --estimated_path {Path to predict} --target_path {Path to wavs} --SISNRi --SISDRi --PESQ --STOI
 ```
 
 ## Credits
