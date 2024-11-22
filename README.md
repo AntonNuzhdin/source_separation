@@ -55,7 +55,7 @@ python inference.py datasets.test.data_dir=<Path to wavs>
 
 To run the additional DPRNN model
 ```bash
-python inference.py datasets.test.data_dir=<Path to wavs> defaults.model=dprnn inferencer.from_pretrained="src/weights/dprnn_weights.pth"
+python inference.py datasets.test.data_dir=<Path to wavs> model=dprnn inferencer.from_pretrained="src/weights/dprnn_weights.pth"
 ```
 
 You can see the text in the terminal: 'Saved predictions to:' {Path to predict}
