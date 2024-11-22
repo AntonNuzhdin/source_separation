@@ -61,7 +61,7 @@ python inference.py datasets.test.data_dir=<Path to wavs> defaults.model=dprnn i
 You can see the text in the terminal: 'Saved predictions to:' {Path to predict}
 
 Insert what is written instead 
-... to the next point
+{Path to predict}
  
 5. Calculate metrics
    
