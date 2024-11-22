@@ -58,20 +58,20 @@ To run the additional DPRNN model
 python inference.py datasets.test.data_dir=<Path to wavs> defaults.model=dprnn inferencer.from_pretrained="src/weights/dprnn_weights.pth"
 ```
 
-You can see the text in the terminal: 'Saved predictions to: <Path to predict>'
+You can see the text in the terminal: 'Saved predictions to:' {Path to predict}
 
 Insert what is written instead 
 ... to the next point
  
 5. Calculate metrics
    
-<Path to wavs>: the path to the directory with ground truth
+{Path to wavs}: the path to the directory with ground truth
 
 The structure should be like this:
 ```
-<Path to wavs> / audio / ...
+{Path to wavs} / audio / ...
 
-<Path to wavs>
+{Path to wavs}
 ├── audio
 │   ├── mix
 │   │   ├── FirstSpeakerID1_SecondSpeakerID1.wav # also may be flac or mp3
@@ -94,7 +94,7 @@ The structure should be like this:
 ```
 
 ```bash
-python calc_metrics.py --estimated_path <Path to predict> --target_path <Path to wavs> --SISNRi --SISDRi --PESQ --STOI
+python calc_metrics.py --estimated_path {Path to predict} --target_path {Path to wavs} --SISNRi --SISDRi --PESQ --STOI
 ```
 
 ## Credits
