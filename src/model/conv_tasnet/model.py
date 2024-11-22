@@ -102,7 +102,7 @@ class ConvTasNet(nn.Module):
         )
         self.use_visual = use_visual
 
-    def forward(self, mix_audio, emb_s1, emb_s2, **batch):
+    def forward(self, mix_audio, emb_s1=None, emb_s2=None, **batch):
         mix_audio = mix_audio.unsqueeze(1)
         if self.use_visual:
             separated_1 = self.conv_tasnet(mix_audio, embed_video=emb_s1)

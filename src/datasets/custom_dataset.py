@@ -16,7 +16,6 @@ class CustomDatasetInference(BaseDataset):
         mix_dir = self._data_dir / "audio" / "mix"
 
         if mix_dir.exists():
-            # print(str(mix_dir))
             mix_files = sorted([f for f in mix_dir.glob("*.*") if f.suffix.lower() in ['.wav', '.flac', '.mp3']])
             for file_m in tqdm(mix_files, desc = 'Create dataset...'):
                 path_mix = str(file_m)

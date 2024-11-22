@@ -1,10 +1,18 @@
-import os
 import numpy as np
 import torchaudio
-import torch
-from src.metrics.all_metrics import SISNRi, SISDRi, PESQ, STOI, SDRi
+from src.metrics.all_metrics import SISNRi, SISDRi, PESQ, STOI
 import argparse
 from pathlib import Path
+from tqdm import tqdm
+
+
+def find_audio_file(base_name, directory, extensions=('wav', 'flac', 'mp3')):
+    directory = Path(directory)
+    for ext in extensions:
+        matching_files = list(directory.glob(f"{base_name}.{ext}"))
+        if matching_files:
+            return matching_files[0]
+    return None
 
 
 def load_audio(path, target_sr):
@@ -19,13 +27,17 @@ def load_audio(path, target_sr):
 
 
 def compute_metrics(args):
-    metrics_list = [
-        SISNRi(name="SISNRi"),
-        SISDRi(name="SISDRi"),
-        PESQ(fs=args.target_sr, mode="wb", name="PESQ"),
-        STOI(fs=args.target_sr, extended=False, name="STOI"),
-        SDRi(name="SDRi")
-    ]
+    metrics_list = []
+
+    if args.SISNRi:
+        metrics_list.append(SISNRi(name="SISNRi"))
+    if args.SISDRi:
+        metrics_list.append(SISDRi(name="SISDRi"))
+    if args.PESQ:
+        metrics_list.append(PESQ(fs=args.target_sr, mode="wb", name="PESQ"))
+    if args.STOI:
+        metrics_list.append(STOI(fs=args.target_sr, extended=False, name="STOI"))
+
     metrics_results = {metric.name: [] for metric in metrics_list}
 
     estimated_root = Path(args.estimated_path)
@@ -40,57 +52,23 @@ def compute_metrics(args):
 
     required_dirs = [s1_estimated, s2_estimated, s1_target, s2_target, mix_path]
     for dir_path in required_dirs:
-        if not Path(dir_path).exists():
-            print(f"Directory {dir_path} does not exist")
-            return
+        assert Path(dir_path).exists(), f"Directory {dir_path} does not exist"
 
     filenames = set()
     for ext in ['wav', 'flac', 'mp3']:
         files = s1_estimated.glob(f'*.{ext}')
         filenames.update([f.stem for f in files])
 
-    if not filenames:
-        print(f"Don't find audio in {s1_estimated}")
-        return
+    assert len(filenames) != 0, f"Don't find audio in {s1_estimated}"
 
-    for base_name in filenames:
-        s1_est = None
-        s2_est = None
-        s1_true = None
-        s2_true = None
-        mix = None
+    for base_name in tqdm(filenames):
+        s1_est = find_audio_file(base_name, s1_estimated)
+        s2_est = find_audio_file(base_name, s2_estimated)
+        s1_true = find_audio_file(base_name, s1_target)
+        s2_true = find_audio_file(base_name, s2_target)
+        mix = find_audio_file(base_name, mix_path)
 
-        for ext in ['wav', 'flac', 'mp3']:
-            est_path = s1_estimated / f'{base_name}.{ext}'
-            if est_path.exists():
-                s1_est = est_path
-                break
-
-        for ext in ['wav', 'flac', 'mp3']:
-            est_path = s2_estimated / f'{base_name}.{ext}'
-            if est_path.exists():
-                s2_est = est_path
-                break
-
-        for ext in ['wav', 'flac', 'mp3']:
-            true_path = s1_target / f'{base_name}.{ext}'
-            if true_path.exists():
-                s1_true = true_path
-                break
-
-        for ext in ['wav', 'flac', 'mp3']:
-            true_path = s2_target / f'{base_name}.{ext}'
-            if true_path.exists():
-                s2_true = true_path
-                break
-
-        for ext in ['wav', 'flac', 'mp3']:
-            mix_path_file = mix_path / f'{base_name}.{ext}'
-            if mix_path_file.exists():
-                mix = mix_path_file
-                break
-
-        if s1_est is None or s2_est is None or mix is None:
+        if s1_est is None or s2_est is None:
             print(f"Don't find {base_name}, skip")
             continue
 
@@ -98,13 +76,11 @@ def compute_metrics(args):
         s2_est_audio = load_audio(s2_est, args.target_sr)
         mix_audio = load_audio(mix, args.target_sr)
 
-        s1_true_audio = None
-        s2_true_audio = None
+        s1_true_audio = load_audio(s1_true, args.target_sr)
+        s2_true_audio = load_audio(s2_true, args.target_sr)
 
-        if s1_true is not None:
-            s1_true_audio = load_audio(s1_true, args.target_sr)
-        if s2_true is not None:
-            s2_true_audio = load_audio(s2_true, args.target_sr)
+        if s1_true_audio is None or s2_true_audio is None:
+            continue
 
         for metric in metrics_list:
             try:
@@ -118,14 +94,13 @@ def compute_metrics(args):
                 )
                 metrics_results[metric.name].append(result.item())
             except Exception as e:
-                print(f"Erorr in {metric.name} for {base_name}: {e}")
+                print(f"Error in {metric.name} for {base_name}: {e}")
 
     for metric_name, values in metrics_results.items():
         if values:
-            avg_value = np.mean(values)
-            print(f"{metric_name}: {avg_value:.4f}")
+            print(f"{metric_name}:", np.mean([v for v in values if v != 0]))
         else:
-            print(f"No values computed for {metric_name}")
+            print(f"{metric_name}: No values calculated.")
 
 
 if __name__ == "__main__":
@@ -133,6 +108,12 @@ if __name__ == "__main__":
     parser.add_argument("--estimated_path", required=True, type=str, help="Path to estimated")
     parser.add_argument("--target_path", required=True, type=str, help="Path to ground truth")
     parser.add_argument("--target_sr", default=16000, type=int, help="Sample rate")
+
+    parser.add_argument("--SISNRi", default=True, action="store_true", help="Enable SISNRi metric")
+    parser.add_argument("--SISDRi", action="store_true", help="Enable SISDRi metric")
+    parser.add_argument("--PESQ", action="store_true", help="Enable PESQ metric")
+    parser.add_argument("--STOI", action="store_true", help="Enable STOI metric")
+
     args = parser.parse_args()
 
     compute_metrics(args)

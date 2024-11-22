@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import numpy as np
 from glob import glob
 from pathlib import Path
@@ -9,42 +8,14 @@ import torchaudio
 from tqdm import tqdm
 
 from src.datasets.base_dataset import BaseDataset
-from src.utils.io_utils import ROOT_PATH
 from src.model.lipreading.main import get_visual_embeddings_batch
-from sklearn.model_selection import train_test_split
 
 class SourceSeparationDataset(BaseDataset):
     def __init__(self, part, data_dir, *args, **kwargs):
         self._data_dir = Path(data_dir)
-        self.train_val_split = None
 
-        if part == "train_v2":
-            train_index = self._get_index("train")
-            val_index = self._get_index("val")
-            if not self.train_val_split:
-                self.train_val_split = self._split(val_index)
-            combined_index = self._combine(train_index, self.train_val_split['train_val'])
-            super().__init__(combined_index, *args, **kwargs)
-        elif part == "val_v2":
-            if not self.train_val_split:
-                val_index = self._get_index("val")
-                self.train_val_split = self._split(val_index)
-            index = self.train_val_split['val_v2']
-            super().__init__(index, *args, **kwargs)
-
-        else:
-            index = self._get_index(part)
-            super().__init__(index, *args, **kwargs)
-
-    def _split(self, val_index):
-        train_val, val_v2 = train_test_split(
-            val_index, test_size=0.3, random_state=42
-        )
-        return {'train_val': train_val, 'val_v2': val_v2}
-
-    def _combine(self, train_index, train_val):
-        combined_index = train_index + train_val
-        return combined_index
+        index = self._get_index(part)
+        super().__init__(index, *args, **kwargs)
 
     def _get_index(self, part):
         index_path = self._data_dir / f"{part}_index.json"

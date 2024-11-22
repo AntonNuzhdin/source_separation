@@ -2,7 +2,7 @@ defaults:
   - model: convtasnet
   - writer: wandb
   - metrics: example
-  - datasets: conv_v2
+  - datasets: train
   - dataloader: example
   - _self_
 optimizer:

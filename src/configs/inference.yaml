@@ -3,14 +3,11 @@ defaults:
   - metrics: inf
   - datasets: conv_inference # we do not want to run inference on training data
   - dataloader: inf
-  # - transforms: example
   - _self_
 inferencer:
-  device_tensors: ["mix_audio", "s1_audio", "s2_audio"] # which tensors should be on device (ex. GPU)
+  device_tensors: ["mix_audio"] # which tensors should be on device (ex. GPU)
   device: auto # device name or "auto"
   save_path: prediction # any name here, can be a dataset name
   seed: 1
-  # from_pretrained: "/home/anton/conv_8_19.pth" # path to the pretrained model
-  # from_pretrained: "src/convtasnet/convtasnet_weights.pth" # path to the pretrained model
-  from_pretrained: "src/weights/conv_8_7.pth" # path to the pretrained model
+  from_pretrained: src/weights/convtasnet.pth # path to the pretrained model
 

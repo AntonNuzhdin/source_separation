@@ -12,6 +12,4 @@ inference: # metrics that are calculated during inference (eval)
   #   name: "STOI"
   #   fs: 16000
   #   extended: False
-  # - _target_: src.metrics.all_metrics.SDRi
-  #   name: "SDRi"
 

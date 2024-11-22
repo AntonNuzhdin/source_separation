@@ -151,7 +151,6 @@ class Inferencer(BaseTrainer):
 
 
             if self.save_path is not None:
-                # you can use safetensors or other lib here
                 speaker_1_dir = self.save_path / part / "speaker_1"
                 speaker_2_dir = self.save_path / part / "speaker_2"
                 speaker_1_dir.mkdir(exist_ok=True, parents=True)
@@ -178,7 +177,8 @@ class Inferencer(BaseTrainer):
         self.is_train = False
         self.model.eval()
 
-        self.evaluation_metrics.reset()
+        if self.metrics is not None:
+            self.evaluation_metrics.reset()
 
         # create Save dir
         if self.save_path is not None:
@@ -199,4 +199,5 @@ class Inferencer(BaseTrainer):
         if self.save_path is not None:
             dir_pred = self.save_path / part
             print(f"Saved predictions to: {dir_pred}")
-        return self.evaluation_metrics.result()
+
+        return self.evaluation_metrics.result() if self.metrics is not None else None

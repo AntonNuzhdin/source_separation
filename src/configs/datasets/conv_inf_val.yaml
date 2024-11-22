@@ -1,0 +1,4 @@
+test:
+  _target_: src.datasets.SourceSeparationDataset
+  part: "val"
+  data_dir: "/home/anton/dla_dataset"

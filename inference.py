@@ -31,17 +31,17 @@ def main(config):
     else:
         device = config.inferencer.device
 
-    dataloaders, _ = get_dataloaders(config, device)
+    dataloaders, _ = get_dataloaders(config, device, to_inference=True)
 
     model = instantiate(config.model).to(device)
     model.eval()
     print(model)
 
-    metrics = {"inference": []}
-    for metric_config in config.metrics.get("inference", []):
-        metrics["inference"].append(
-            instantiate(metric_config)
-        )
+    # metrics = {"inference": []}
+    # for metric_config in config.metrics.get("inference", []):
+    #     metrics["inference"].append(
+    #         instantiate(metric_config)
+    #     )
 
     save_path = ROOT_PATH / "data" / "saved" / config.inferencer.save_path
     save_path.mkdir(exist_ok=True, parents=True)
@@ -53,16 +53,16 @@ def main(config):
         device=device,
         dataloaders=dataloaders,
         save_path=save_path,
-        metrics=metrics,
+        metrics=None,
         skip_model_load=False,
     )
 
     logs = inferencer.run_inference()
 
-    for part in logs.keys():
-        for key, value in logs[part].items():
-            full_key = part + "_" + key
-            print(f"    {full_key:15s}: {value}")
+    # for part in logs.keys():
+    #     for key, value in logs[part].items():
+    #         full_key = part + "_" + key
+    #         print(f"    {full_key:15s}: {value}")
 
 
 if __name__ == "__main__":
