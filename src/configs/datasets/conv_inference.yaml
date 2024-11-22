@@ -2,4 +2,4 @@ test:
   _target_: src.datasets.CustomDatasetInference
 
   # data_dir: "/home/anton/dla_test_dataset"
-  data_dir: "/home/anton/dla_testing"
+  data_dir: "./"

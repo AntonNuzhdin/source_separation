@@ -105,8 +105,8 @@ def compute_metrics(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compute metrics on inference")
-    parser.add_argument("--estimated_path", required=True, type=str, help="Path to estimated")
-    parser.add_argument("--target_path", required=True, type=str, help="Path to ground truth")
+    parser.add_argument("--estimated_path", default="./data/saved/prediction/test", type=str, help="Path to estimated")
+    parser.add_argument("--target_path", default="./", type=str, help="Path to ground truth")
     parser.add_argument("--target_sr", default=16000, type=int, help="Sample rate")
 
     parser.add_argument("--SISNRi", default=True, action="store_true", help="Enable SISNRi metric")
